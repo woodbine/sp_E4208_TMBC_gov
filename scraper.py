@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 #### IMPORTS 1.0
@@ -7,13 +6,13 @@ import os
 import re
 import scraperwiki
 import urllib2
-import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
-from dateutil.parser import parse
-import itertools
 
-#### FUNCTIONS 1.0
+
+#### FUNCTIONS 1.2
+
+import requests   # import requests to validate urls
 
 def validateFilename(filename):
     filenameregex = '^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[0-9][0-9][0-9][0-9]_[0-9QY][0-9]$'
@@ -95,8 +94,6 @@ data = []
 
 #### READ HTML 1.0
 
-
-
 html = urllib2.urlopen(url)
 soup = BeautifulSoup(html, 'lxml')
 
@@ -107,9 +104,14 @@ block = soup.find('div', attrs = {'class':'main_content'})
 links = block.find_all('a')
 for link in links:
     if 'CSV' in link.text:
-        url = 'http://www.tameside.gov.uk' + link['href']
+        if 'http://' not in link['href']:
+            url = 'http://www.tameside.gov.uk' + link['href']
+        else:
+            url = link['href']
         csvMth = link.text.strip().split('for')[-2].strip()[:3]
         csvYr = link.text.strip().split('for')[-2].strip().split(' in')[0][-4:]
+        if 'Qtr' in csvMth:
+            csvMth = 'Q2'
         if 'CSV' in csvYr:
             csvYr = '2013'
         csvMth = convert_mth_strings(csvMth.upper())
