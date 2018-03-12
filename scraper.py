@@ -88,7 +88,7 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "E4208_TMBC_gov"
-url = "http://www.tameside.gov.uk/transparency/archive#feb11"
+url = "http://www.tameside.gov.uk/transparency/archive"
 errors = 0
 data = []
 
@@ -100,19 +100,25 @@ soup = BeautifulSoup(html, 'lxml')
 #### SCRAPE DATA
 
 
-block = soup.find('div', attrs = {'class':'main_content'})
-links = block.find_all('a')
+links = soup.find_all('a')
 for link in links:
     if 'CSV' in link.text:
-        if 'http://' not in link['href']:
-            url = 'http://www.tameside.gov.uk' + link['href']
+        if 'http' not in link['href']:
+            url = 'https://www.tameside.gov.uk' + link['href']
         else:
             url = link['href']
         csvMth = link.text.strip().split('for')[-2].strip()[:3]
         csvYr = link.text.strip().split('for')[-2].strip().split(' in')[0][-4:]
-        if 'Qtr' in csvMth:
-            csvMth = 'Q2'
-        if 'CSV' in csvYr:
+        if 'January-March' in link.text:
+            csvMth = 'Q1'
+            csvYr = link.text.split('in ')[0].strip()[-4:]
+        if 'October-December' in link.text:
+            csvMth = 'Q4'
+            csvYr = link.text.split(' in ')[0][-4:]
+        if 'July-September' in link.text:
+            csvMth = 'Q3'
+            csvYr = link.text.split(' in ')[0][-4:]
+        if ' CSV' in csvYr:
             csvYr = '2013'
         csvMth = convert_mth_strings(csvMth.upper())
         data.append([csvYr, csvMth, url])
@@ -138,4 +144,3 @@ if errors > 0:
 
 
 #### EOF
-
